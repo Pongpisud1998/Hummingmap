@@ -1,0 +1,13 @@
+<!-- <app-header></app-header> -->
+<!-- <app-siderbar></app-siderbar> -->
+<app-home></app-home>
+<app-header *ngIf="location.path()!='/login'"></app-header>
+<app-siderbar *ngIf="location.path()!='/login'"></app-siderbar>
+<div class="content-body">
+    <!-- row -->
+    <div class="container-fluid">
+        <router-outlet></router-outlet>
+
+    </div>
+</div>
+<app-footer *ngIf="location.path()!='/login'"></app-footer>
