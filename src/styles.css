@@ -1,0 +1,10 @@
+.gps_ring {
+    background-color: rgba(21, 255, 0, 0.5);
+    /* border: 2px solid rgb(0, 255, 76); */
+    -webkit-border-radius: 20px;
+    height: 20px;
+    width: 20px;
+    -webkit-animation: pulsate 3s ease-out;
+    -webkit-animation-iteration-count: infinite;
+  
+  }

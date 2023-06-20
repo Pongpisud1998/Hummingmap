@@ -1,0 +1,11 @@
+<div class="row">
+    <div class="col-12">
+        <div id="map"></div>
+        <div class="ontop_btn">
+            <label for="file_image" class="btn btn-rounded btn-primary radius-30" style="
+                font-size: 14px;height: 40px;"><i class='fa fa-upload'></i>อัปโหลดรูปภาพ</label>
+            <input id="file_image" name="file" type="file" multiple class="form-control col-1" hidden
+                (change)="imagesSelected($event)" accept="image/*">
+        </div>
+    </div>
+</div>
