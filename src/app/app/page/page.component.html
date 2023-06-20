@@ -1,75 +1,11 @@
 <div class="row">
     <div class="col-12">
         <div id="map"></div>
-        <div class="sidemap text-center p-4">
-            <div *ngIf="list_province.length>0">
-                <h6>เลือกจังหวัด:</h6>
-                <select name="province" id="province" [(ngModel)]="province" class="form-control"
-                    (change)="change_select_province('province')">
-                    <option value="">ทุกจังหวัด</option>
-                    <option value="{{item.properties.pv_th}}" *ngFor="let item of list_province;let i= index;">
-                        {{item.properties.pv_th}}</option>
-                </select>
-            </div>
-            <div *ngIf="list_amphoe.length>0">
-                <h6>เลือกอำเภอ:</h6>
-                <select name="amphoe" id="amphoe" [(ngModel)]="amphoe" class="form-control"
-                    (change)="change_select_province('amphoe')">
-                    <option value="">ทุกอำเภอ</option>
-                    <option value="{{item.properties.ap_th}}" *ngFor="let item of list_amphoe">{{item.properties.ap_th}}
-                    </option>
-                </select>
-            </div>
-            <div *ngIf="list_tambon.length>0">
-                <h6>เลือกตำบล:</h6>
-                <select name="tambon" id="tambon" [(ngModel)]="tambon" class="form-control"
-                    (change)="change_select_province('tambon')">
-                    <option value="">ทุกตำบล</option>
-                    <option value="{{item.properties.tb_th}}" *ngFor="let item of list_tambon">{{item.properties.tb_th}}
-                    </option>
-                </select>
-            </div>
-
-            <div class="row mt-4 mb-4" *ngIf="station_list.length>0">
-                <div class="col-6">
-                    <h6>คำแหน่ง Station:</h6>
-                </div>
-                <div class="col-6">
-                    <input type="checkbox" id="st_check" name="st_check" (change)="stCheck()" [(ngModel)]="st_check"> 
-                </div>    
-            </div>
-
-
-
-
-
-        </div>
-    </div>
-</div>
-
-
-<div class="modal fade" id="create_station" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Station</h5>
-                <button type="button" class="close" data-dismiss="modal"><span>×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h6>AreaTH</h6>
-                <input type="text" class="form-control" [(ngModel)]="station.areaTH">
-                <h6>NameTH</h6>
-                <input type="text" class="form-control" [(ngModel)]="station.nameTH">
-                <h6>Lat</h6>
-                <input type="text" class="form-control" [(ngModel)]="station.lat" disabled>
-                <h6>Long</h6>
-                <input type="text" class="form-control" [(ngModel)]="station.long" disabled>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger light" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="saveStation()">Save changes</button>
-            </div>
+        <div class="ontop_btn">
+            <label for="file_image" class="btn btn-rounded btn-primary radius-30" style="
+                font-size: 14px;height: 40px;"><i class='fa fa-upload'></i>อัปโหลดรูปภาพ</label>
+            <input id="file_image" name="file" type="file" multiple class="form-control col-1" hidden
+                (change)="imagesSelected($event)" accept="image/*">
         </div>
     </div>
 </div>

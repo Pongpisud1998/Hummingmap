@@ -3,6 +3,8 @@ import * as L from 'leaflet';
 import { WebserviceService } from 'src/app/service/webservice.service';
 import 'leaflet.pm';
 declare var $: any;
+import 'leaflet-imageoverlay-rotated';
+import { DomSanitizer, platformBrowser } from '@angular/platform-browser';
 @Component({
   selector: 'app-page',
   templateUrl: './page.component.html',
@@ -44,285 +46,193 @@ export class PageComponent implements OnInit {
 
 
 
+  img_icon = L.icon({
+    iconUrl: 'https://mapedia.co.th/prod/api/image/picture.png',
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+
+  })
+
+  all_image: any = [];
+  raw_image: any = [];
+
+  count: any = 0;
+  fileAmount: any = 0;
+
+  layer_gcp: any = L.layerGroup();
+  layer_image: any = L.layerGroup();
+
+  layer_footprint: any = L.layerGroup();
+  layer_footprint_hover: any = L.layerGroup();
+
+  render_image :any = L.layerGroup();
+
+
+
 
 
   constructor(
     private webservice: WebserviceService,
+    public domSanitizer: DomSanitizer,
   ) { }
 
   async ngOnInit(): Promise<void> {
     this.initmap();
-    await this.getData();
   }
-
-  async getData() {
-    await this.webservice.province().then((res: any) => {
-      // console.log(res);
-
-      function compare(a: any, b: any) {
-        if (a.properties.pv_th < b.properties.pv_th) {
-          return -1;
-        }
-        if (a.properties.pv_th > b.properties.pv_th) {
-          return 1;
-        }
-        return 0;
-      }
-      res.features.sort(compare);
-
-      this.list_province = res.features;
-      console.log(this.list_province);
-
-
-    })
-
-    await this.setBoundaryInMap('province');
-
-    await this.webservice.airData().then((res: any) => {
-      console.log(res.stations);
-      this.station_list = res.stations;
-      this.getStation();
-    })
-  }
-
-  async setBoundaryInMap(type: any) {
-    if (this.layer_group != null) {
-      this.layer_group.clearLayers();
-    }
-    if (type == "province") {
-      await this.list_province.forEach((e: any) => {
-        var bounds = L.geoJson(e, {
-          onEachFeature: onEachFeature
-        }).addTo(this.layer_group);
-      })
-
-      function onEachFeature(feature: any, layer: any) {
-        var randomColor = Math.floor(Math.random() * 16777215).toString(16);
-        layer.setStyle({
-          color: '#' + randomColor,
-          fillColor: '#' + randomColor,
-          dashArray: 5,
-          fillOpacity: 0.5,
-        })
-        // layer.bindPopup("จังหวัด : " + feature.properties.pv_th);
-      }
-      this.map.setView(this.center_latlng, this.zoom);
-
-    } else if (type == "amphoe") {
-      await this.list_amphoe.forEach((e: any) => {
-        var bounds = L.geoJson(e, {
-          onEachFeature: onEachFeature
-        }).addTo(this.layer_group);
-      })
-
-      function onEachFeature(feature: any, layer: any) {
-        var randomColor = Math.floor(Math.random() * 16777215).toString(16);
-        layer.setStyle({
-          color: '#' + randomColor,
-          fillColor: '#' + randomColor,
-          dashArray: 5,
-          fillOpacity: 0.5,
-        })
-        // layer.bindPopup("อำเภอ : " + feature.properties.ap_th);
-      }
-    } else if (type == "tambon") {
-      await this.list_tambon.forEach((e: any) => {
-        var bounds = L.geoJson(e, {
-          onEachFeature: onEachFeature
-        }).addTo(this.layer_group);
-      })
-
-      function onEachFeature(feature: any, layer: any) {
-        var randomColor = Math.floor(Math.random() * 16777215).toString(16);
-        layer.setStyle({
-          color: '#' + randomColor,
-          fillColor: '#' + randomColor,
-          dashArray: 5,
-          fillOpacity: 0.5,
-        })
-        // layer.bindPopup("ตำบล : " + feature.properties.tb_th);
-      }
-    }
-
-
-  }
-
-
 
   async initmap() {
     this.map = L.map("map").setView(this.center_latlng, this.zoom);
-    this.layerMap = L.tileLayer(
-      "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
-      {
-        maxZoom: 25,
-      }
-    ).addTo(this.map);
+
+
+    var layerMap = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      attribution: '&copy; <a href="https://www.google.com/maps">Google</a>',
+      maxZoom: 25,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    }).addTo(this.map);
+
+    var CartoDB = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxNativeZoom: 24,
+      maxZoom: 25
+    });
+
+    var baseMap = {
+      "Google Map": layerMap, // BaseMaps
+      "CartoDB": CartoDB, 		// BaseMaps
+    };
+
+
+    var options = {
+      "image": this.layer_image, 		// BaseMaps
+      "image_footprint": this.layer_footprint, //footprint
+      "render_image": this.render_image, //footprint
+    };
+
+    var checkbox = L.control.layers(baseMap, options).addTo(this.map);
     setTimeout(() => {
       this.map.invalidateSize();
     }, 300);
+  }
 
-    this.map.pm.addControls({
-      position: 'topright',
-      drawCircle: false,
-      drawPolygon: false,
-      drawPolyline: false,
-      drawRectangle: false,
-      drawCircleMarker: false,
-      removalMode: false,
-      cutPolygon: false,
-      editMode: false,
-      dragMode: false,
+  imagesSelected(event: any) {
+
+    const files: File[] = event.target.files;
+
+    if (typeof files === 'undefined') {
+      return;
+    }
+    return this.handleImages(files);
+
+
+  }
+
+  async handleImages(files: File[]) {
+
+
+    if (files.length == 0) return;
+
+    var newImages = [];
+    this.count = 0;
+    this.fileAmount = files.length;
+    for (let i = 0; i < files.length; i++) {
+
+      let file = files[i];
+
+      const name = file.name;
+      const type = file.type;
+
+      const url = (window.URL ? URL : webkitURL).createObjectURL(file);
+      const imageUrl = url !== null ? this.domSanitizer.bypassSecurityTrustResourceUrl(url) : null;
+
+      //   // Save image
+      const image = await this.webservice.saveImageRaw(file, url);
+      this.count++;
+    }
+    // if (this.arrayGCP.length > 0 && this.count == files.length) {
+
+    //   this.webservice.matchImage();
+    // }
+    this.all_image = this.webservice.images;
+    this.raw_image = this.webservice.task_images;
+    // console.log(this.raw_image);
+    setTimeout(() => {
+      this.setMarkerImage();
+    }, 2000)
+  }
+
+  async setMarkerImage() {
+    if (this.layer_image != undefined && this.layer_image != null) {
+      this.layer_image.clearLayers();
+    }
+    if (this.layer_footprint != undefined && this.layer_footprint != null) {
+      this.layer_footprint.clearLayers();
+    }
+    await this.setBBox();
+  }
+
+  async setBBox() {
+
+    await this.all_image.forEach(async (e: any) => {
+      console.log(e);
+
+      var poly: any = L.geoJSON(e.geom, {
+        style: {
+          color: 'green',
+          fillColor: 'yellow',
+          fillOpacity: 0
+        }
+      }).addTo(this.layer_footprint);
+      this.layer_image.addTo(this.map);
+      var bounds = poly.getBounds();
+      // console.log(e.geom.geometry.coordinates[0]);
+      // console.log(e.yaw);
+      this.map.fitBounds(bounds)
+        if(e.yaw<=90){ 
+          var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
+          var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+          var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+        //หมุน 90-179 องศา
+        }else if(e.yaw>90&&e.yaw<179){
+          var point1 = L.latLng(e.geom.geometry.coordinates[0][1][1],e.geom.geometry.coordinates[0][1][0]);
+          var point2 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+          var point3 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+        }else {
+          var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
+          var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+          var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+        }
+        setTimeout(()=>{
+         var overlay: any = L.imageOverlay.rotated(e.url, point1, point2, point3).addTo(this.render_image);
+        },5000)
+     
+     
+      let content = `<h6 style="color:black">Image: ${e.name} </h6>`;
+      L.marker([e.lat, e.lng], { icon: this.img_icon })
+        .bindPopup(content)
+        .on('mouseover', (ev) => {
+          L.geoJSON(e.geom, {
+            style: {
+              color: 'yellow',
+              fillColor: 'yellow',
+              fillOpacity: 0.2
+            }
+          }).addTo(this.layer_footprint_hover);
+          this.layer_footprint_hover.addTo(this.map)
+        })
+        .on('mouseout', (ev) => {
+          // if (layer_marker != undefined && layer_marker != null) {
+          //   layer_marker.clearLayers();
+          // }
+          if (this.layer_footprint_hover != undefined && this.layer_footprint_hover != null) {
+            this.layer_footprint_hover.clearLayers();
+          }
+        })
+        .addTo(this.layer_image);
+      this.layer_image.addTo(this.map);
     });
 
-    this.map.on('pm:create', (e: any) => {
-      console.log(e.layer._latlng);
-      e.layer.remove();
-      this.station.lat = e.layer._latlng.lat;
-      this.station.long = e.layer._latlng.lng;
-      $("#create_station").modal('show');
-    });
 
-    // this.map.pm.enableDraw('Marker', { snappable: false });
-
-
-    this.layer_group = L.layerGroup();
-    this.layer_group.addTo(this.map)
-    this.station_layer = L.layerGroup();
-    this.station_layer.addTo(this.map)
-  }
-
-  async change_select_province(type: any) {
-
-    if (type == "province") {
-      await this.webservice.amphoe(this.province).then((res: any) => {
-        function compare(a: any, b: any) {
-          if (a.properties.ap_th < b.properties.ap_th) {
-            return -1;
-          }
-          if (a.properties.ap_th > b.properties.ap_th) {
-            return 1;
-          }
-          return 0;
-        }
-        res.features.sort(compare);
-        this.list_amphoe = res.features;
-      })
-      this.amphoe = "";
-      this.tambon = "";
-      if (this.province == "") {
-        this.setBoundaryInMap(type);
-      } else {
-        this.setBoundaryInMap('amphoe');
-      }
-
-
-    }
-    if (type == "amphoe") {
-      await this.webservice.tambon(this.province, this.amphoe).then((res: any) => {
-        function compare(a: any, b: any) {
-          if (a.properties.tb_th < b.properties.tb_th) {
-            return -1;
-          }
-          if (a.properties.tb_th > b.properties.tb_th) {
-            return 1;
-          }
-          return 0;
-        }
-        res.features.sort(compare);
-        this.list_tambon = res.features;
-      })
-      this.tambon = "";
-      if (this.amphoe == "") {
-        this.setBoundaryInMap('amphoe');
-      } else {
-        this.setBoundaryInMap('tambon');
-      }
-    }
-    if (type == "tambon") {
-      if (this.tambon == "") {
-        this.setBoundaryInMap('tambon');
-      } else {
-        let f = this.list_tambon.find((find: any) => find.properties.tb_th == this.tambon);
-        if (f != undefined) {
-          this.layer_group.clearLayers();
-          var bounds = L.geoJson(f, {
-            onEachFeature: onEachFeature
-          }).addTo(this.layer_group);
-          this.map.fitBounds(bounds.getBounds());
-          function onEachFeature(feature: any, layer: any) {
-            var randomColor = Math.floor(Math.random() * 16777215).toString(16);
-            layer.setStyle({
-              color: '#' + randomColor,
-              fillColor: '#' + randomColor,
-              dashArray: 5,
-              fillOpacity: 0.5,
-            })
-            layer.bindPopup("ตำบล : " + feature.properties.tb_th);
-          }
-        }
-      }
-
-    }
-
-  }
-
-  getStation() {
-    // var st_divicon = L.divIcon({
-    //   // Specify a class name we can refer to in CSS.
-    //   className: 'css-icon-charge',
-    //   html: '<div class="gps_ring"></div>'
-    //   // Set marker width and height
-    //   , iconSize: [5, 5]
-    //   , iconAnchor: [2.5, 2.5]
-    // })
-    this.station_list.forEach((e: any) => {
-      var st = L.marker([e.lat, e.long], { icon: this.st_icon }).bindPopup(
-        '<table class="table table-bordered"><tr><td>Nameth:</td><td>' + e.nameTH + '</td></tr>' +
-        '<tr><td>areaTH:</td><td>' + e.areaTH + '<td></tr>' +
-        '<tr><td>AQI:</td><td>' + 'level:' + e.LastUpdate.AQI.Level + "aqi:" + e.LastUpdate.AQI.aqi + '</td></tr>' +
-        '<tr><td>CO:</td><td>' + 'unit:' + e.LastUpdate.CO.unit + "value:" + e.LastUpdate.CO.value + '</td></tr>' +
-        '<tr><td>NO2:</td><td>' + 'unit:' + e.LastUpdate.NO2.unit + "value:" + e.LastUpdate.NO2.value + '</td></tr>' +
-        '<tr><td>O3:</td><td>' + 'unit:' + e.LastUpdate.O3.unit + "value:" + e.LastUpdate.O3.value + '</td></tr>' +
-        '<tr><td>PM10:</td><td>' + 'unit:' + e.LastUpdate.PM10.unit + "value:" + e.LastUpdate.PM10.value + '</td></tr>' +
-        '<tr><td>PM25:</td><td>' + 'unit:' + e.LastUpdate.PM25.unit + "value:" + e.LastUpdate.PM25.value + '</td></tr>' +
-        '<tr><td>SO2:</td><td>' + 'unit:' + e.LastUpdate.SO2.unit + "value:" + e.LastUpdate.O3.value + '</td></tr>' +
-        '</table>').addTo(this.station_layer);
-
-      // var tooltip = L.popup()
-      //   .setLatLng([e.lat, e.long])
-      //   .setContent('<table><tr><td>Nameth:<td><td>' + e.nameTH + '<td></tr>' +
-      //               '<tr><td>areaTH:<td><td>' + e.areaTH + '<td></tr>' +
-      //               '<tr><td>AQI:<td><td>' +'level:'+ e.LastUpdate.AQI.Level +"aqi:" + e.LastUpdate.AQI.aqi + '<td></tr>' +
-      //               '<tr><td>CO:<td><td>' +'unit:'+ e.LastUpdate.CO.unit +"value:" + e.LastUpdate.CO.value + '<td></tr>' +
-      //               '<tr><td>NO2:<td><td>' +'unit:'+ e.LastUpdate.NO2.unit +"value:" + e.LastUpdate.NO2.value + '<td></tr>' +
-      //               '<tr><td>O3:<td><td>' +'unit:'+ e.LastUpdate.O3.unit +"value:" + e.LastUpdate.O3.value + '<td></tr>' +
-      //               '<tr><td>PM10:<td><td>' +'unit:'+ e.LastUpdate.PM10.unit +"value:" + e.LastUpdate.PM10.value + '<td></tr>' +
-      //               '<tr><td>PM25:<td><td>' +'unit:'+ e.LastUpdate.PM25.unit +"value:" + e.LastUpdate.PM25.value + '<td></tr>' +
-      //               '<tr><td>SO2:<td><td>' +'unit:'+ e.LastUpdate.SO2.unit +"value:" + e.LastUpdate.O3.value + '<td></tr>' +
-      //                '</table>')
-      //   .addTo(this.map);
-    });
-  }
-
-  stCheck() {
-    switch (this.st_check) {
-      case true:
-        this.getStation();
-        break;
-      case false:
-        this.station_layer.clearLayers();
-        break;
-    }
-
-  }
-
-  saveStation() {
-    console.log(this.station);
-    L.marker([this.station.lat, this.station.long], { icon: this.st_icon }).bindPopup(
-      '<table class="table table-bordered"><tr><td>Nameth:</td><td>' + this.station.nameTH + '</td></tr>' +
-      '<tr><td>areaTH:</td><td>' + this.station.areaTH + '<td></tr>' +
-      '</table>').addTo(this.station_layer);
-    this.map.pm.disableDraw('Marker');
   }
 
 
