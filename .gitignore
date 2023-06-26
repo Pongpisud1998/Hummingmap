@@ -11,6 +11,10 @@
 /dist
 
 .angular
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 # misc
 .DS_Store
 .env.local
