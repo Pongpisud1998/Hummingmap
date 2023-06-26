@@ -173,10 +173,9 @@ export class PageComponent implements OnInit {
 
   async setBBox() {
 
-    await this.all_image.forEach(async (e: any) => {
-      console.log(e);
+    for(var i in this.all_image){
 
-      var poly: any = L.geoJSON(e.geom, {
+      var poly: any = L.geoJSON(this.all_image[i].geom, {
         style: {
           color: 'green',
           fillColor: 'yellow',
@@ -185,33 +184,33 @@ export class PageComponent implements OnInit {
       }).addTo(this.layer_footprint);
       this.layer_image.addTo(this.map);
       var bounds = poly.getBounds();
-      // console.log(e.geom.geometry.coordinates[0]);
+      // console.log(this.all_image[i].geom.geometry.coordinates[0]);
       // console.log(e.yaw);
       this.map.fitBounds(bounds)
-        if(e.yaw<=90){ 
-          var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
-          var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
-          var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+        if(this.all_image[i].yaw<=90){ 
+          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1],this.all_image[i].geom.geometry.coordinates[0][3][0]);
+          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
+          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
         //หมุน 90-179 องศา
-        }else if(e.yaw>90&&e.yaw<179){
-          var point1 = L.latLng(e.geom.geometry.coordinates[0][1][1],e.geom.geometry.coordinates[0][1][0]);
-          var point2 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
-          var point3 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+        }else if(this.all_image[i].yaw>90&&this.all_image[i].yaw<179){
+          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][1][1],this.all_image[i].geom.geometry.coordinates[0][1][0]);
+          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
+          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
         }else {
-          var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
-          var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
-          var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1],this.all_image[i].geom.geometry.coordinates[0][3][0]);
+          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
+          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
         }
-        setTimeout(()=>{
-         var overlay: any = L.imageOverlay.rotated(e.url, point1, point2, point3).addTo(this.render_image);
-        },5000)
+        // setTimeout(()=>{
+         var overlay: any = L.imageOverlay.rotated(this.all_image[i].url, point1, point2, point3).addTo(this.map);
+        // },1000)
      
      
-      let content = `<h6 style="color:black">Image: ${e.name} </h6>`;
-      L.marker([e.lat, e.lng], { icon: this.img_icon })
+      let content = `<h6 style="color:black">Image: ${this.all_image[i].name} </h6>`;
+      L.marker([this.all_image[i].lat, this.all_image[i].lng], { icon: this.img_icon })
         .bindPopup(content)
         .on('mouseover', (ev) => {
-          L.geoJSON(e.geom, {
+          L.geoJSON(this.all_image[i].geom, {
             style: {
               color: 'yellow',
               fillColor: 'yellow',
@@ -230,7 +229,69 @@ export class PageComponent implements OnInit {
         })
         .addTo(this.layer_image);
       this.layer_image.addTo(this.map);
-    });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+
+    // await this.all_image.forEach(async (e: any) => {
+    //   console.log(e);
+
+    //   var poly: any = L.geoJSON(e.geom, {
+    //     style: {
+    //       color: 'green',
+    //       fillColor: 'yellow',
+    //       fillOpacity: 0
+    //     }
+    //   }).addTo(this.layer_footprint);
+    //   this.layer_image.addTo(this.map);
+    //   var bounds = poly.getBounds();
+    //   // console.log(e.geom.geometry.coordinates[0]);
+    //   // console.log(e.yaw);
+    //   this.map.fitBounds(bounds)
+    //     if(e.yaw<=90){ 
+    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
+    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+    //     //หมุน 90-179 องศา
+    //     }else if(e.yaw>90&&e.yaw<179){
+    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][1][1],e.geom.geometry.coordinates[0][1][0]);
+    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+    //     }else {
+    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
+    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
+    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
+    //     }
+    //     setTimeout(()=>{
+    //      var overlay: any = L.imageOverlay.rotated(e.url, point1, point2, point3).addTo(this.render_image);
+    //     },5000)
+     
+     
+    //   let content = `<h6 style="color:black">Image: ${e.name} </h6>`;
+    //   L.marker([e.lat, e.lng], { icon: this.img_icon })
+    //     .bindPopup(content)
+    //     .on('mouseover', (ev) => {
+    //       L.geoJSON(e.geom, {
+    //         style: {
+    //           color: 'yellow',
+    //           fillColor: 'yellow',
+    //           fillOpacity: 0.2
+    //         }
+    //       }).addTo(this.layer_footprint_hover);
+    //       this.layer_footprint_hover.addTo(this.map)
+    //     })
+    //     .on('mouseout', (ev) => {
+    //       // if (layer_marker != undefined && layer_marker != null) {
+    //       //   layer_marker.clearLayers();
+    //       // }
+    //       if (this.layer_footprint_hover != undefined && this.layer_footprint_hover != null) {
+    //         this.layer_footprint_hover.clearLayers();
+    //       }
+    //     })
+    //     .addTo(this.layer_image);
+    //   this.layer_image.addTo(this.map);
+    // });
 
 
   }

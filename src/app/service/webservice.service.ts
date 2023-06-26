@@ -168,6 +168,12 @@ export class WebserviceService {
             let image: any;
             var h: any;
 
+            
+
+            const resizeImage = await this.resizeImage(imageUrl,512,342)
+            //console.log(resizeImage);
+            
+
             if (output.RelativeAltitude != undefined) {
               if (this.altitude == 0) {
                 h = Number(output.RelativeAltitude);
@@ -189,9 +195,9 @@ export class WebserviceService {
                 gimbal.yaw = (360 - Math.abs(gimbal.yaw));
               }
               var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
-              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
+              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: rotatedPoly, url: resizeImage, yaw: output.GimbalYawDegree }
             } else {
-              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: null, url: imageUrl, yaw: null }
+              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: null, url: resizeImage, yaw: null }
             }
             return this.saveImage(image, f);
           }
@@ -266,5 +272,32 @@ export class WebserviceService {
       this.task_images.splice(this.images.indexOf(f), 1)
     }
   }
+  
+
+  resizeImage(url: string, desiredWidth: number, desiredHeight: number): Promise<string> {
+    return new Promise<string>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx:any = canvas.getContext('2d');
+  
+        // Set the canvas dimensions to the desired size
+        canvas.width = desiredWidth;
+        canvas.height = desiredHeight;
+  
+        // Draw the image onto the canvas at the desired size
+        ctx.drawImage(img, 0, 0, desiredWidth, desiredHeight);
+  
+        // Convert the canvas image to a data URL and resolve the promise
+        const resizedImageUrl = canvas.toDataURL();
+        resolve(resizedImageUrl);
+      };
+  
+      // Load the image
+      img.src = url;
+    });
+  }
+  
+  
 
 }
