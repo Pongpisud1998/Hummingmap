@@ -16,7 +16,7 @@ interface LatLng {
 })
 export class WebserviceService {
 
-  base_url = 'http://localhost:8888/api/test-theme/';
+  base_url = 'http://localhost:3000/';
   api_node:any;
 
   httpOptions = {
@@ -101,9 +101,9 @@ export class WebserviceService {
     });
   }
 
-  async login(data:any) {
+  async uploadImage(data:any) {
     return new Promise((res, rej) => {
-      this.http.post(this.base_url + 'sent_data.php?table=login',JSON.stringify(data))
+      this.http.post(this.base_url + 'upload',JSON.stringify(data))
         .subscribe((data: any) => {
           res(data)
         }, (err: any) => {
@@ -112,31 +112,9 @@ export class WebserviceService {
     });
   }
 
-  async province() {
+  async getImage() {
     return new Promise((res, rej) => {
-      this.http.get(this.base_url + 'get_data.php?table=province')
-        .subscribe((data: any) => {
-          res(data)
-        }, (err: any) => {
-          rej(err)
-        });
-    });
-  }
-
-  async amphoe(pv_th:any) {
-    return new Promise((res, rej) => {
-      this.http.get(this.base_url + 'get_data.php?table=amphoe&pv_th='+pv_th)
-        .subscribe((data: any) => {
-          res(data)
-        }, (err: any) => {
-          rej(err)
-        });
-    });
-  }
-
-  async tambon(pv_th:any,ap_th:any) {
-    return new Promise((res, rej) => {
-      this.http.get(this.base_url + 'get_data.php?table=tambon&pv_th='+pv_th+"&ap_th="+ap_th)
+      this.http.get(this.base_url + 'files')
         .subscribe((data: any) => {
           res(data)
         }, (err: any) => {
@@ -158,9 +136,12 @@ export class WebserviceService {
 
 
   async saveImageRaw(f: File, imageUrl: string) {
+    console.log(f,imageUrl);
     if (f.type === 'image/jpeg' || f.type === 'image/png' || f.type === 'image/tiff') {
       await exifr.parse(f, true)
         .then(async output => {
+          
+          
 
           if (output.latitude != undefined && output.longitude != undefined) {
             var dsm: any = 0;

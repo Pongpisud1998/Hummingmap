@@ -65,7 +65,7 @@ export class PageComponent implements OnInit {
   layer_footprint: any = L.layerGroup();
   layer_footprint_hover: any = L.layerGroup();
 
-  render_image :any = L.layerGroup();
+  render_image: any = L.layerGroup();
 
 
 
@@ -77,6 +77,7 @@ export class PageComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.getData();
     this.initmap();
   }
 
@@ -138,6 +139,8 @@ export class PageComponent implements OnInit {
     for (let i = 0; i < files.length; i++) {
 
       let file = files[i];
+      // console.log(file);
+
 
       const name = file.name;
       const type = file.type;
@@ -145,9 +148,11 @@ export class PageComponent implements OnInit {
       const url = (window.URL ? URL : webkitURL).createObjectURL(file);
       const imageUrl = url !== null ? this.domSanitizer.bypassSecurityTrustResourceUrl(url) : null;
 
+
       //   // Save image
       const image = await this.webservice.saveImageRaw(file, url);
       this.count++;
+      
     }
     // if (this.arrayGCP.length > 0 && this.count == files.length) {
 
@@ -173,7 +178,7 @@ export class PageComponent implements OnInit {
 
   async setBBox() {
 
-    for(var i in this.all_image){
+    for (var i in this.all_image) {
 
       var poly: any = L.geoJSON(this.all_image[i].geom, {
         style: {
@@ -187,25 +192,25 @@ export class PageComponent implements OnInit {
       // console.log(this.all_image[i].geom.geometry.coordinates[0]);
       // console.log(e.yaw);
       this.map.fitBounds(bounds)
-        if(this.all_image[i].yaw<=90){ 
-          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1],this.all_image[i].geom.geometry.coordinates[0][3][0]);
-          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
-          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
+      if (this.all_image[i].yaw <= 90) {
+        var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1], this.all_image[i].geom.geometry.coordinates[0][3][0]);
+        var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1], this.all_image[i].geom.geometry.coordinates[0][2][0]);
+        var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1], this.all_image[i].geom.geometry.coordinates[0][0][0]);
         //หมุน 90-179 องศา
-        }else if(this.all_image[i].yaw>90&&this.all_image[i].yaw<179){
-          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][1][1],this.all_image[i].geom.geometry.coordinates[0][1][0]);
-          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
-          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
-        }else {
-          var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1],this.all_image[i].geom.geometry.coordinates[0][3][0]);
-          var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1],this.all_image[i].geom.geometry.coordinates[0][2][0]);
-          var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1],this.all_image[i].geom.geometry.coordinates[0][0][0]);
-        }
-        // setTimeout(()=>{
-         var overlay: any = L.imageOverlay.rotated(this.all_image[i].url, point1, point2, point3).addTo(this.map);
-        // },1000)
-     
-     
+      } else if (this.all_image[i].yaw > 90 && this.all_image[i].yaw < 179) {
+        var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][1][1], this.all_image[i].geom.geometry.coordinates[0][1][0]);
+        var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1], this.all_image[i].geom.geometry.coordinates[0][0][0]);
+        var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1], this.all_image[i].geom.geometry.coordinates[0][2][0]);
+      } else {
+        var point1 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][3][1], this.all_image[i].geom.geometry.coordinates[0][3][0]);
+        var point2 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][2][1], this.all_image[i].geom.geometry.coordinates[0][2][0]);
+        var point3 = L.latLng(this.all_image[i].geom.geometry.coordinates[0][0][1], this.all_image[i].geom.geometry.coordinates[0][0][0]);
+      }
+      // setTimeout(()=>{
+      var overlay: any = L.imageOverlay.rotated(this.all_image[i].url, point1, point2, point3).addTo(this.map);
+      // },1000)
+
+
       let content = `<h6 style="color:black">Image: ${this.all_image[i].name} </h6>`;
       L.marker([this.all_image[i].lat, this.all_image[i].lng], { icon: this.img_icon })
         .bindPopup(content)
@@ -266,8 +271,8 @@ export class PageComponent implements OnInit {
     //     setTimeout(()=>{
     //      var overlay: any = L.imageOverlay.rotated(e.url, point1, point2, point3).addTo(this.render_image);
     //     },5000)
-     
-     
+
+
     //   let content = `<h6 style="color:black">Image: ${e.name} </h6>`;
     //   L.marker([e.lat, e.lng], { icon: this.img_icon })
     //     .bindPopup(content)
@@ -295,6 +300,27 @@ export class PageComponent implements OnInit {
 
 
   }
+
+  getData() {
+    this.webservice.getImage().then((res: any) => {
+      const filesData: any[] = res.files;
+      if (typeof filesData === 'undefined') {
+        return;
+      }
+  
+      const files: File[] = filesData.map((fileData: any) => {
+        const blob = new Blob([], { type: fileData.type });
+        const file = new File([blob], fileData.name, { type: fileData.lastModified});
+        return file;
+      });
+  
+      return this.handleImages(files);
+
+    })
+
+  }
+
+  
 
 
 

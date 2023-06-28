@@ -21,13 +21,13 @@ export class LoginComponent implements OnInit {
   }
 
   login(){
-    this.webservice.login({username:this.username,password:this.password}).then((res:any)=>{
-      if(res){
-        localStorage.setItem("user_data",JSON.stringify(res));
-        this.router.navigateByUrl('map');
-      }
+    // this.webservice.login({username:this.username,password:this.password}).then((res:any)=>{
+    //   if(res){
+    //     localStorage.setItem("user_data",JSON.stringify(res));
+    //     this.router.navigateByUrl('map');
+    //   }
       
-    })
+    // })
   }
 
 }
