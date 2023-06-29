@@ -5,6 +5,7 @@ import 'leaflet.pm';
 declare var $: any;
 import 'leaflet-imageoverlay-rotated';
 import { DomSanitizer, platformBrowser } from '@angular/platform-browser';
+import * as exifr from 'exifr';
 @Component({
   selector: 'app-page',
   templateUrl: './page.component.html',
@@ -77,7 +78,9 @@ export class PageComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.getData();
+    setInterval(() => {
+      this.getData();
+    }, 1000)
     this.initmap();
   }
 
@@ -152,7 +155,7 @@ export class PageComponent implements OnInit {
       //   // Save image
       const image = await this.webservice.saveImageRaw(file, url);
       this.count++;
-      
+
     }
     // if (this.arrayGCP.length > 0 && this.count == files.length) {
 
@@ -301,33 +304,34 @@ export class PageComponent implements OnInit {
 
   }
 
-  getData() {
-    this.webservice.getImage().then((res: any) => {
-      const filesData: any[] = res.files;
-      if (typeof filesData === 'undefined') {
-        return;
+  image_length: any =0;
+
+  async getData() {
+    await this.webservice.getImage().then((res: any) => {
+      if (res.length > this.image_length) {
+
+        res.forEach((e: any) => {
+          // console.log(e.metadata.latitude,e.metadata.longitude);
+          this.webservice.getImageRaw(e.fileName, e.metadata, e.path)
+        });
+
+        this.all_image = this.webservice.images;
+        this.raw_image = this.webservice.task_images;
+        this.image_length = this.all_image.length
+        // console.log(this.raw_image);
+        // setTimeout(() => {
+          this.setMarkerImage();
+        // }, 1000)
+
+
       }
-  
-      // const files: File[] = filesData.map((fileData: any) => {
-      //   const blob = new Blob([], { type: fileData.type });
-      //   const file = new File([blob], fileData.name, { type: fileData.lastModified});
-      const files: File[] = filesData.map((fileData: any) => {
-        const blob = new Blob([], { type: fileData.type });
-        const file = new File([blob], fileData.name, {
-          type: fileData.type,
-          lastModified: fileData.lastModified,
-          size: fileData.size
-        } as any);
-        return file;
-      });
-  
-      return this.handleImages(files);
 
     })
 
+
   }
 
-  
+
 
 
 

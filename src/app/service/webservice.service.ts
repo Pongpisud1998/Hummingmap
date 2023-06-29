@@ -17,7 +17,7 @@ interface LatLng {
 export class WebserviceService {
 
   base_url = 'http://localhost:3000/';
-  api_node:any;
+  api_node: any;
 
   httpOptions = {
     headers: new HttpHeaders({
@@ -79,7 +79,7 @@ export class WebserviceService {
     });
   }
 
-  async get_amphoe(pv_th:any) {
+  async get_amphoe(pv_th: any) {
     return new Promise((res, rej) => {
       this.http.get(this.api_node + '/province/amphoe/' + pv_th)
         .subscribe((data: any) => {
@@ -90,7 +90,7 @@ export class WebserviceService {
     });
   }
 
-  async get_tambol(pv_th:any, ap_th:any) {
+  async get_tambol(pv_th: any, ap_th: any) {
     return new Promise((res, rej) => {
       this.http.get(this.api_node + '/province/tambon/' + pv_th + '/' + ap_th)
         .subscribe((data: any) => {
@@ -101,9 +101,9 @@ export class WebserviceService {
     });
   }
 
-  async uploadImage(data:any) {
+  async uploadImage(data: any) {
     return new Promise((res, rej) => {
-      this.http.post(this.base_url + 'upload',JSON.stringify(data))
+      this.http.post(this.base_url + 'upload', JSON.stringify(data))
         .subscribe((data: any) => {
           res(data)
         }, (err: any) => {
@@ -136,12 +136,12 @@ export class WebserviceService {
 
 
   async saveImageRaw(f: File, imageUrl: string) {
-    console.log(f,imageUrl);
+
     if (f.type === 'image/jpeg' || f.type === 'image/png' || f.type === 'image/tiff') {
       await exifr.parse(f, true)
         .then(async output => {
-          
-          
+          // console.log(output);
+
 
           if (output.latitude != undefined && output.longitude != undefined) {
             var dsm: any = 0;
@@ -149,11 +149,11 @@ export class WebserviceService {
             let image: any;
             var h: any;
 
-            
 
-            const resizeImage = await this.resizeImage(imageUrl,512,342)
-            //console.log(resizeImage);
-            
+
+            const resizeImage = await this.resizeImage(imageUrl, 512, 342)
+            // console.log(resizeImage);
+
 
             if (output.RelativeAltitude != undefined) {
               if (this.altitude == 0) {
@@ -195,6 +195,7 @@ export class WebserviceService {
     } else {
       match[0].url = image.url;
     }
+    
 
     return image;
   }
@@ -253,32 +254,76 @@ export class WebserviceService {
       this.task_images.splice(this.images.indexOf(f), 1)
     }
   }
-  
+
 
   resizeImage(url: string, desiredWidth: number, desiredHeight: number): Promise<string> {
     return new Promise<string>((resolve) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const ctx:any = canvas.getContext('2d');
-  
+        const ctx: any = canvas.getContext('2d');
+
         // Set the canvas dimensions to the desired size
         canvas.width = desiredWidth;
         canvas.height = desiredHeight;
-  
+
         // Draw the image onto the canvas at the desired size
         ctx.drawImage(img, 0, 0, desiredWidth, desiredHeight);
-  
+
         // Convert the canvas image to a data URL and resolve the promise
         const resizedImageUrl = canvas.toDataURL();
         resolve(resizedImageUrl);
       };
-  
+
       // Load the image
       img.src = url;
     });
   }
-  
-  
+
+
+  async getImageRaw(name:any,output: any, imageUrl: string) {
+    // console.log(output, imageUrl);
+
+
+    if (output.latitude != undefined && output.longitude != undefined) {
+      let image: any;
+      var h: any;
+
+      // const resizeImage = await this.resizeImage(imageUrl, 512, 342)
+      // console.log(resizeImage);
+
+
+      if (output.RelativeAltitude != undefined) {
+        if (this.altitude == 0) {
+          h = Number(output.RelativeAltitude);
+        } else {
+          h = this.altitude;
+        }
+      }
+      if (output.GimbalPitchDegree != undefined && output.GimbalReverse != undefined && output.GimbalRollDegree != undefined && output.GimbalYawDegree != undefined) {
+        var pixel: any = output.ExifImageWidth;
+        var gsd: any = (((h * this.x_sensor) * 100) / (this.y_sensor * pixel)).toFixed(3); // m * 100 -> cm
+        var footprint: any = { width: Math.ceil(output.ExifImageWidth * gsd) / 100, height: Math.ceil(output.ExifImageHeight * gsd) / 100 };
+
+        var gimbal: any = { picth: output.GimbalPitchDegree, reverse: output.GimbalReverse, roll: output.GimbalRollDegree, yaw: output.GimbalYawDegree }
+        var utm: any = await L.latLng(output.latitude, output.longitude).utm();
+        var coord1: any = await (L.utm({ x: Number(utm.x + (footprint.width / 2)), y: Number(utm.y + (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
+        var coord3: any = await (L.utm({ x: Number(utm.x - (footprint.width / 2)), y: Number(utm.y - (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
+        var poly: any = await turf.bboxPolygon([coord3.lng, coord3.lat, coord1.lng, coord1.lat]);
+        if (gimbal.yaw < 0) {
+          gimbal.yaw = (360 - Math.abs(gimbal.yaw));
+        }
+        var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
+        image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name:name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
+      } else {
+        image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name:name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: null, url: imageUrl, yaw: null }
+      }
+      // console.log(image);
+      
+      return this.saveImage(image, name);
+    }
+  }
+
+
 
 }
