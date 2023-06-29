@@ -78,9 +78,9 @@ export class PageComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    setInterval(() => {
-      this.getData();
-    }, 1000)
+    // setInterval(() => {
+    //   this.getData();
+    // }, 1000)
     this.initmap();
   }
 
