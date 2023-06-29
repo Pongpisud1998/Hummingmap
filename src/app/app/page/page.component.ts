@@ -308,9 +308,16 @@ export class PageComponent implements OnInit {
         return;
       }
   
+      // const files: File[] = filesData.map((fileData: any) => {
+      //   const blob = new Blob([], { type: fileData.type });
+      //   const file = new File([blob], fileData.name, { type: fileData.lastModified});
       const files: File[] = filesData.map((fileData: any) => {
         const blob = new Blob([], { type: fileData.type });
-        const file = new File([blob], fileData.name, { type: fileData.lastModified});
+        const file = new File([blob], fileData.name, {
+          type: fileData.type,
+          lastModified: fileData.lastModified,
+          size: fileData.size
+        } as any);
         return file;
       });
   
