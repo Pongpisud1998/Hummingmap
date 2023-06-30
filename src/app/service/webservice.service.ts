@@ -176,9 +176,9 @@ export class WebserviceService {
                 gimbal.yaw = (360 - Math.abs(gimbal.yaw));
               }
               var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
-              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: rotatedPoly, url: resizeImage, yaw: output.GimbalYawDegree }
+              image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: rotatedPoly, url: resizeImage, yaw: output.GimbalYawDegree }
             } else {
-              image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name: f.name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: null, url: resizeImage, yaw: null }
+              image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: null, url: resizeImage, yaw: null }
             }
             return this.saveImage(image, f);
           }
@@ -282,7 +282,7 @@ export class WebserviceService {
 
 
   async getImageRaw(name:any,output: any, imageUrl: string) {
-    // console.log(output, imageUrl);
+    //console.log(output, imageUrl);
 
 
     if (output.latitude != undefined && output.longitude != undefined) {
@@ -314,9 +314,9 @@ export class WebserviceService {
           gimbal.yaw = (360 - Math.abs(gimbal.yaw));
         }
         var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
-        image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name:name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
+        image = { /*img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl),*/ name:name, lat: output.latitude, lng: output.longitude, /*check: false, distance: 0, gcp_label: "", x: "", y: "",*/ geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
       } else {
-        image = { img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl), name:name, lat: output.latitude, lng: output.longitude, check: false, distance: 0, gcp_label: "", x: "", y: "", geom: null, url: imageUrl, yaw: null }
+        image = { /*img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl),*/ name:name, lat: output.latitude, lng: output.longitude, /*check: false, distance: 0, gcp_label: "", x: "", y: "",*/geom: null, url: imageUrl, yaw: null }
       }
       // console.log(image);
       
