@@ -6,6 +6,9 @@ declare var $: any;
 import 'leaflet-imageoverlay-rotated';
 import { DomSanitizer, platformBrowser } from '@angular/platform-browser';
 import * as exifr from 'exifr';
+
+
+
 @Component({
   selector: 'app-page',
   templateUrl: './page.component.html',
@@ -68,10 +71,6 @@ export class PageComponent implements OnInit {
 
   render_image: any = L.layerGroup();
 
-
-
-
-
   constructor(
     private webservice: WebserviceService,
     public domSanitizer: DomSanitizer,
@@ -101,22 +100,22 @@ export class PageComponent implements OnInit {
       maxZoom: 25
     });
 
-    var baseMap = {
-      "Google Map": layerMap, // BaseMaps
-      "CartoDB": CartoDB, 		// BaseMaps
-    };
+    // var baseMap = {
+    //   "Google Map": layerMap, // BaseMaps
+    //   "CartoDB": CartoDB, 		// BaseMaps
+    // };
 
 
-    var options = {
-      "image": this.layer_image, 		// BaseMaps
-      "image_footprint": this.layer_footprint, //footprint
-      "render_image": this.render_image, //footprint
-    };
+    // var options = {
+    //   "image": this.layer_image, 		// BaseMaps
+    //   "image_footprint": this.layer_footprint, //footprint
+    //   "render_image": this.render_image, //footprint
+    // };
 
-    var checkbox = L.control.layers(baseMap, options).addTo(this.map);
-    setTimeout(() => {
-      this.map.invalidateSize();
-    }, 300);
+    // var checkbox = L.control.layers(baseMap, options).addTo(this.map);
+    // setTimeout(() => {
+    //   this.map.invalidateSize();
+    // }, 300);
   }
 
   imagesSelected(event: any) {
@@ -153,14 +152,11 @@ export class PageComponent implements OnInit {
 
 
       //   // Save image
-      const image = await this.webservice.saveImageRaw(file, url);
+      const image = await this.webservice.getImageRaw(name,file, url);
       this.count++;
 
     }
-    // if (this.arrayGCP.length > 0 && this.count == files.length) {
 
-    //   this.webservice.matchImage();
-    // }
     this.all_image = this.webservice.images;
     this.raw_image = this.webservice.task_images;
     // console.log(this.raw_image);
@@ -228,9 +224,6 @@ export class PageComponent implements OnInit {
           this.layer_footprint_hover.addTo(this.map)
         })
         .on('mouseout', (ev) => {
-          // if (layer_marker != undefined && layer_marker != null) {
-          //   layer_marker.clearLayers();
-          // }
           if (this.layer_footprint_hover != undefined && this.layer_footprint_hover != null) {
             this.layer_footprint_hover.clearLayers();
           }
@@ -240,67 +233,6 @@ export class PageComponent implements OnInit {
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-
-
-    // await this.all_image.forEach(async (e: any) => {
-    //   console.log(e);
-
-    //   var poly: any = L.geoJSON(e.geom, {
-    //     style: {
-    //       color: 'green',
-    //       fillColor: 'yellow',
-    //       fillOpacity: 0
-    //     }
-    //   }).addTo(this.layer_footprint);
-    //   this.layer_image.addTo(this.map);
-    //   var bounds = poly.getBounds();
-    //   // console.log(e.geom.geometry.coordinates[0]);
-    //   // console.log(e.yaw);
-    //   this.map.fitBounds(bounds)
-    //     if(e.yaw<=90){ 
-    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
-    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
-    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
-    //     //หมุน 90-179 องศา
-    //     }else if(e.yaw>90&&e.yaw<179){
-    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][1][1],e.geom.geometry.coordinates[0][1][0]);
-    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
-    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
-    //     }else {
-    //       var point1 = L.latLng(e.geom.geometry.coordinates[0][3][1],e.geom.geometry.coordinates[0][3][0]);
-    //       var point2 = L.latLng(e.geom.geometry.coordinates[0][2][1],e.geom.geometry.coordinates[0][2][0]);
-    //       var point3 = L.latLng(e.geom.geometry.coordinates[0][0][1],e.geom.geometry.coordinates[0][0][0]);
-    //     }
-    //     setTimeout(()=>{
-    //      var overlay: any = L.imageOverlay.rotated(e.url, point1, point2, point3).addTo(this.render_image);
-    //     },5000)
-
-
-    //   let content = `<h6 style="color:black">Image: ${e.name} </h6>`;
-    //   L.marker([e.lat, e.lng], { icon: this.img_icon })
-    //     .bindPopup(content)
-    //     .on('mouseover', (ev) => {
-    //       L.geoJSON(e.geom, {
-    //         style: {
-    //           color: 'yellow',
-    //           fillColor: 'yellow',
-    //           fillOpacity: 0.2
-    //         }
-    //       }).addTo(this.layer_footprint_hover);
-    //       this.layer_footprint_hover.addTo(this.map)
-    //     })
-    //     .on('mouseout', (ev) => {
-    //       // if (layer_marker != undefined && layer_marker != null) {
-    //       //   layer_marker.clearLayers();
-    //       // }
-    //       if (this.layer_footprint_hover != undefined && this.layer_footprint_hover != null) {
-    //         this.layer_footprint_hover.clearLayers();
-    //       }
-    //     })
-    //     .addTo(this.layer_image);
-    //   this.layer_image.addTo(this.map);
-    // });
-
 
   }
 
@@ -328,13 +260,10 @@ export class PageComponent implements OnInit {
 
     })
 
-
   }
 
 
-
-
-
+    
 
 }
 

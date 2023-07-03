@@ -6,6 +6,8 @@ import * as L from 'leaflet';
 import 'leaflet.utm';
 import * as turf from '@turf/turf';
 
+
+
 interface LatLng {
   lat: number;
   lng: number;
@@ -135,57 +137,52 @@ export class WebserviceService {
   }
 
 
-  async saveImageRaw(f: File, imageUrl: string) {
+  // async saveImageRaw(f: File, imageUrl: string) {
 
-    if (f.type === 'image/jpeg' || f.type === 'image/png' || f.type === 'image/tiff') {
-      await exifr.parse(f, true)
-        .then(async output => {
-          // console.log(output);
-
-
-          if (output.latitude != undefined && output.longitude != undefined) {
-            var dsm: any = 0;
-            var tgm: any = 0;
-            let image: any;
-            var h: any;
+  //   if (f.type === 'image/jpeg' || f.type === 'image/png' || f.type === 'image/tiff') {
+  //     await exifr.parse(f, true)
+  //       .then(async output => {
+  //         // console.log(output);
 
 
+  //         if (output.latitude != undefined && output.longitude != undefined) {
+  //           var dsm: any = 0;
+  //           var tgm: any = 0;
+  //           let image: any;
+  //           var h: any;
 
-            const resizeImage = await this.resizeImage(imageUrl, 512, 342)
-            // console.log(resizeImage);
 
+  //           if (output.RelativeAltitude != undefined) {
+  //             if (this.altitude == 0) {
+  //               h = Number(output.RelativeAltitude);
+  //             } else {
+  //               h = this.altitude;
+  //             }
+  //           }
+  //           if (output.GimbalPitchDegree != undefined && output.GimbalReverse != undefined && output.GimbalRollDegree != undefined && output.GimbalYawDegree != undefined) {
+  //             var pixel: any = output.ExifImageWidth;
+  //             var gsd: any = (((h * this.x_sensor) * 100) / (this.y_sensor * pixel)).toFixed(3); // m * 100 -> cm
+  //             var footprint: any = { width: Math.ceil(output.ExifImageWidth * gsd) / 100, height: Math.ceil(output.ExifImageHeight * gsd) / 100 };
 
-            if (output.RelativeAltitude != undefined) {
-              if (this.altitude == 0) {
-                h = Number(output.RelativeAltitude);
-              } else {
-                h = this.altitude;
-              }
-            }
-            if (output.GimbalPitchDegree != undefined && output.GimbalReverse != undefined && output.GimbalRollDegree != undefined && output.GimbalYawDegree != undefined) {
-              var pixel: any = output.ExifImageWidth;
-              var gsd: any = (((h * this.x_sensor) * 100) / (this.y_sensor * pixel)).toFixed(3); // m * 100 -> cm
-              var footprint: any = { width: Math.ceil(output.ExifImageWidth * gsd) / 100, height: Math.ceil(output.ExifImageHeight * gsd) / 100 };
+  //             var gimbal: any = { picth: output.GimbalPitchDegree, reverse: output.GimbalReverse, roll: output.GimbalRollDegree, yaw: output.GimbalYawDegree }
+  //             var utm: any = await L.latLng(output.latitude, output.longitude).utm();
+  //             var coord1: any = await (L.utm({ x: Number(utm.x + (footprint.width / 2)), y: Number(utm.y + (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
+  //             var coord3: any = await (L.utm({ x: Number(utm.x - (footprint.width / 2)), y: Number(utm.y - (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
+  //             var poly: any = await turf.bboxPolygon([coord3.lng, coord3.lat, coord1.lng, coord1.lat]);
+  //             if (gimbal.yaw < 0) {
+  //               gimbal.yaw = (360 - Math.abs(gimbal.yaw));
+  //             }
+  //             var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
+  //             image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
+  //           } else {
+  //             image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: null, url: imageUrl, yaw: null }
+  //           }
+  //           return this.saveImage(image, f);
+  //         }
 
-              var gimbal: any = { picth: output.GimbalPitchDegree, reverse: output.GimbalReverse, roll: output.GimbalRollDegree, yaw: output.GimbalYawDegree }
-              var utm: any = await L.latLng(output.latitude, output.longitude).utm();
-              var coord1: any = await (L.utm({ x: Number(utm.x + (footprint.width / 2)), y: Number(utm.y + (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
-              var coord3: any = await (L.utm({ x: Number(utm.x - (footprint.width / 2)), y: Number(utm.y - (footprint.height / 2)), zone: utm.zone, band: utm.band, southHemi: false })).latLng();
-              var poly: any = await turf.bboxPolygon([coord3.lng, coord3.lat, coord1.lng, coord1.lat]);
-              if (gimbal.yaw < 0) {
-                gimbal.yaw = (360 - Math.abs(gimbal.yaw));
-              }
-              var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
-              image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: rotatedPoly, url: resizeImage, yaw: output.GimbalYawDegree }
-            } else {
-              image = {  name: f.name, lat: output.latitude, lng: output.longitude,geom: null, url: resizeImage, yaw: null }
-            }
-            return this.saveImage(image, f);
-          }
-
-        })
-    }
-  }
+  //       })
+  //   }
+  // }
 
   saveImage(image: any, file: any) {
     const match = this.images.filter((item: any) => item.name === image.name);
@@ -240,11 +237,6 @@ export class WebserviceService {
         }
       });
     }, 1000)
-
-
-
-
-
   }
 
   removeImage(image: any) {
@@ -255,32 +247,7 @@ export class WebserviceService {
     }
   }
 
-
-  resizeImage(url: string, desiredWidth: number, desiredHeight: number): Promise<string> {
-    return new Promise<string>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx: any = canvas.getContext('2d');
-
-        // Set the canvas dimensions to the desired size
-        canvas.width = desiredWidth;
-        canvas.height = desiredHeight;
-
-        // Draw the image onto the canvas at the desired size
-        ctx.drawImage(img, 0, 0, desiredWidth, desiredHeight);
-
-        // Convert the canvas image to a data URL and resolve the promise
-        const resizedImageUrl = canvas.toDataURL();
-        resolve(resizedImageUrl);
-      };
-
-      // Load the image
-      img.src = url;
-    });
-  }
-
-
+  
   async getImageRaw(name:any,output: any, imageUrl: string) {
     //console.log(output, imageUrl);
 
@@ -288,9 +255,6 @@ export class WebserviceService {
     if (output.latitude != undefined && output.longitude != undefined) {
       let image: any;
       var h: any;
-
-      // const resizeImage = await this.resizeImage(imageUrl, 512, 342)
-      // console.log(resizeImage);
 
 
       if (output.RelativeAltitude != undefined) {
@@ -314,15 +278,17 @@ export class WebserviceService {
           gimbal.yaw = (360 - Math.abs(gimbal.yaw));
         }
         var rotatedPoly: any = await turf.transformRotate(poly, gimbal.yaw);
-        image = { /*img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl),*/ name:name, lat: output.latitude, lng: output.longitude, /*check: false, distance: 0, gcp_label: "", x: "", y: "",*/ geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
+        image = { name:name, lat: output.latitude, lng: output.longitude, geom: rotatedPoly, url: imageUrl, yaw: output.GimbalYawDegree }
       } else {
-        image = { /*img: this.domSanitizer.bypassSecurityTrustResourceUrl(imageUrl),*/ name:name, lat: output.latitude, lng: output.longitude, /*check: false, distance: 0, gcp_label: "", x: "", y: "",*/geom: null, url: imageUrl, yaw: null }
+        image = { name:name, lat: output.latitude, lng: output.longitude, geom: null, url: imageUrl, yaw: null }
       }
       // console.log(image);
       
       return this.saveImage(image, name);
     }
   }
+
+  
 
 
 
